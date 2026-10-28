@@ -1,0 +1,635 @@
+<!doctype html>
+<html lang="pt">
+<head>
+<meta charset="utf-8">
+<title>Taça Nacional Walking Football</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="description" content="Sorteio da Zona 2 da 1.ª Taça Nacional de Walking Football: clubes, jogos e cidades de cada jornada.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=Source+Sans+3:wght@400;600&display=swap">
+<style>
+/* Layout: fixture-list reading. Big condensed numerals (positions, match days) in a left column, names and opponents to the right, hairline rules instead of cards. */
+:root {
+  --bg: #F1F3EC;
+  --surface: #FAFBF7;
+  --ink: #12261B;
+  --muted: #5A6B60;
+  --line: #D6DDD0;
+  --accent: #0F7A4A;
+  --accent-ink: #FFFFFF;
+  --accent-soft: #DCEEE3;
+  --warm: #B94A1B;
+  --font-display: "Barlow Condensed", "Arial Narrow", Arial, sans-serif;
+  --font-body: "Source Sans 3", system-ui, -apple-system, "Segoe UI", sans-serif;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0C1611;
+    --surface: #12231A;
+    --ink: #E7EFE8;
+    --muted: #8FA597;
+    --line: #24392D;
+    --accent: #4FC389;
+    --accent-ink: #06150D;
+    --accent-soft: #17382A;
+    --warm: #F0905F;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0C1611;
+  --surface: #12231A;
+  --ink: #E7EFE8;
+  --muted: #8FA597;
+  --line: #24392D;
+  --accent: #4FC389;
+  --accent-ink: #06150D;
+  --accent-soft: #17382A;
+  --warm: #F0905F;
+  color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+body {
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--font-body);
+  font-size: 16px;
+  line-height: 1.4;
+  padding-block: 20px 48px;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+}
+.wrap { max-width: 680px; margin: 0 auto; min-width: 0; }
+a { color: inherit; }
+button { font: inherit; color: inherit; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 4px; }
+
+header.top { display: grid; gap: 6px; padding-bottom: 14px; }
+.eyebrow {
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 15px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--accent);
+}
+h1 {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: clamp(34px, 9vw, 46px);
+  line-height: 0.95;
+  text-transform: uppercase;
+  letter-spacing: 0.01em;
+  margin: 0;
+  text-wrap: balance;
+}
+nav.tabs { display: flex; gap: 22px; border-bottom: 1px solid var(--line); margin-top: 6px; }
+nav.tabs a {
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 20px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  text-decoration: none;
+  color: var(--muted);
+  padding: 10px 0 8px;
+  border-bottom: 3px solid transparent;
+  margin-bottom: -1px;
+}
+nav.tabs a[aria-current="page"] { color: var(--ink); border-bottom-color: var(--accent); }
+
+.note { color: var(--muted); font-size: 14px; margin: 12px 0 0; min-height: 1.4em; }
+.note.err { color: var(--warm); }
+
+/* Clubs list */
+ol.clubs { list-style: none; margin: 4px 0 0; padding: 0; }
+ol.clubs li { border-bottom: 1px solid var(--line); }
+ol.clubs a {
+  display: grid;
+  grid-template-columns: 64px minmax(0, 1fr) 20px;
+  align-items: center;
+  gap: 8px;
+  padding: 11px 0;
+  text-decoration: none;
+}
+.posnum {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 34px;
+  line-height: 1;
+  color: var(--accent);
+  font-variant-numeric: tabular-nums;
+}
+.posnum small { font-size: 17px; font-weight: 600; margin-right: 2px; color: var(--muted); }
+.cname { font-size: 18px; font-weight: 600; overflow-wrap: anywhere; }
+.chev { color: var(--muted); }
+ol.clubs a:hover .cname { text-decoration: underline; text-underline-offset: 3px; }
+
+/* Team header */
+.back { display: inline-flex; align-items: center; gap: 4px; color: var(--muted); text-decoration: none; font-size: 15px; padding: 14px 0 6px; }
+.back:hover { color: var(--ink); }
+.teamhead { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 14px; align-items: end; padding: 4px 0 14px; border-bottom: 2px solid var(--ink); }
+.teamhead .posnum { font-size: 64px; }
+.teamhead .posnum small { font-size: 28px; }
+h2.tname {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: clamp(28px, 8vw, 38px);
+  line-height: 1;
+  margin: 0;
+  overflow-wrap: anywhere;
+  text-wrap: balance;
+}
+.tsub { color: var(--muted); font-size: 14px; margin-top: 4px; }
+
+/* Fixture blocks */
+.fix { display: grid; grid-template-columns: 70px minmax(0, 1fr); gap: 12px; padding: 16px 0; border-bottom: 1px solid var(--line); }
+.when { display: grid; align-content: start; justify-items: start; gap: 2px; }
+.when .day { font-family: var(--font-display); font-weight: 700; font-size: 40px; line-height: 0.9; font-variant-numeric: tabular-nums; }
+.when .mon { font-family: var(--font-display); font-weight: 600; font-size: 15px; letter-spacing: 0.1em; color: var(--accent); }
+.when .wd { font-size: 12px; color: var(--muted); }
+.what { min-width: 0; display: grid; gap: 4px; }
+.cityline { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 10px; min-height: 30px; }
+.cityline .label { font-size: 12px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); }
+.cityline .cityname { font-weight: 600; font-size: 17px; }
+.cityline .pending { color: var(--muted); font-style: italic; }
+.jr { font-size: 12px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); }
+
+.game { display: grid; grid-template-columns: 74px minmax(0, 1fr); gap: 10px; align-items: baseline; padding: 7px 0; border-top: 1px dashed var(--line); }
+.game:first-of-type { border-top: 0; }
+.slot { font-family: var(--font-display); font-weight: 600; font-size: 15px; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); }
+.slot.extra { color: var(--warm); }
+a.opp { display: inline-flex; flex-wrap: wrap; gap: 2px 8px; align-items: baseline; text-decoration: none; min-width: 0; }
+a.opp .p { font-family: var(--font-display); font-weight: 700; font-size: 17px; color: var(--accent); }
+a.opp .n { font-weight: 600; font-size: 17px; overflow-wrap: anywhere; }
+a.opp:hover .n { text-decoration: underline; text-underline-offset: 3px; }
+.rest { color: var(--muted); font-style: italic; }
+
+/* Edit controls */
+.btn {
+  display: inline-flex; align-items: center; gap: 6px;
+  min-height: 34px; padding: 4px 12px;
+  background: transparent; border: 1px solid var(--line); border-radius: 6px;
+  font-size: 14px; cursor: pointer;
+}
+.btn:hover { border-color: var(--accent); color: var(--accent); }
+.btn.primary { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); font-weight: 600; }
+.btn.primary:hover { color: var(--accent-ink); filter: brightness(1.06); }
+.iconbtn { min-width: 34px; padding: 4px 8px; }
+form.inline { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; width: 100%; }
+form.inline input {
+  flex: 1 1 180px; min-width: 0; min-height: 40px;
+  font: inherit; font-size: 16px; color: var(--ink);
+  background: var(--surface); border: 1px solid var(--accent); border-radius: 6px; padding: 6px 10px;
+}
+
+.printbar { display: flex; flex-wrap: wrap; gap: 8px; padding: 10px 0 0; }
+.btn.gps { text-decoration: none; color: var(--accent); border-color: var(--accent); }
+.btn.gps:hover { background: var(--accent-soft); }
+
+/* Calendar tab */
+details.all { margin-top: 6px; }
+details.all summary { cursor: pointer; color: var(--accent); font-size: 14px; font-weight: 600; padding: 6px 0; }
+details.all h4 { font-family: var(--font-display); font-weight: 600; font-size: 15px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); margin: 10px 0 4px; }
+ul.matches { list-style: none; margin: 0; padding: 0; display: grid; gap: 2px; }
+ul.matches li { display: flex; flex-wrap: wrap; gap: 0 6px; align-items: baseline; font-size: 15px; padding: 3px 0; }
+ul.matches .p { font-family: var(--font-display); font-weight: 700; color: var(--accent); }
+ul.matches .x { color: var(--muted); }
+ul.matches a { text-decoration: none; }
+ul.matches a:hover { text-decoration: underline; }
+
+@media (max-width: 380px) {
+  .fix { grid-template-columns: 58px minmax(0, 1fr); gap: 10px; }
+  .game { grid-template-columns: 64px minmax(0, 1fr); }
+  ol.clubs a { grid-template-columns: 56px minmax(0, 1fr) 16px; }
+}
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; animation: none !important; } }
+html { padding-top: env(safe-area-inset-top, 0px); padding-bottom: env(safe-area-inset-bottom, 0px); }
+body { margin: 0; }
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <header class="top">
+    <div class="eyebrow">FPF Walking Football · Zona 2</div>
+    <h1>Taça Nacional Walking Football</h1>
+    <nav class="tabs" aria-label="Secções">
+      <a href="#clubes" id="tab-clubes">Clubes</a>
+      <a href="#calendario" id="tab-calendario">Calendário</a>
+    </nav>
+  </header>
+  <p class="note" id="status" role="status" aria-live="polite"></p>
+  <main id="app"></main>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script>
+(function () {
+  /* CONFIGURAÇÃO: cola aqui o endereço da tua Realtime Database do Firebase (ver LEIA-ME.md). */
+  var DB_URL = "https://aroessc-225416.firebaseio.com/";
+  var CAN_RENAME_TEAMS = false;
+
+  var TEAMS0 = ["JM Lousada","GD Estaleiros Navais","AD Argoncilhe","OS Andorinhas","AF Campo","AD Esposende","CD Aves 1930","AC Cabeceirenses","SC Beira Mar","AD Unidos S. Clemente","Arões SC","Stª Catarina","AF Porto","FC Marinhão","SC Vianense"];
+
+  /* Matriz Zona 2: r1 e r2 são as duas jornadas do dia, x é o jogo J8 entre as duas equipas que descansam. */
+  var DATES = [
+    {iso:"2026-10-31", r1:[[1,8],[15,2],[3,9],[7,4],[14,5],[6,13],[10,12]], r2:[[2,1],[3,14],[15,6],[9,10],[5,12],[13,8],[4,11]], x:[11,7]},
+    {iso:"2026-11-21", r1:[[1,10],[13,3],[4,9],[8,6],[11,14],[5,15],[12,7]], r2:[[13,1],[14,2],[7,3],[10,4],[11,5],[9,6],[12,8]], x:[2,15]},
+    {iso:"2026-12-12", r1:[[2,9],[3,4],[5,7],[6,12],[8,14],[10,11],[15,13]], r2:[[4,1],[2,10],[6,3],[8,5],[7,15],[14,9],[11,13]], x:[12,1]},
+    {iso:"2027-01-30", r1:[[9,1],[11,2],[10,3],[8,4],[6,7],[12,13],[14,15]], r2:[[1,12],[2,7],[4,6],[5,10],[8,11],[9,15],[13,14]], x:[3,5]},
+    {iso:"2027-02-27", r1:[[1,15],[12,2],[3,11],[4,5],[14,6],[7,10],[9,8]], r2:[[6,1],[13,2],[12,3],[5,9],[11,7],[15,8],[10,14]], x:[13,4]},
+    {iso:"2027-03-20", r1:[[1,14],[7,8],[3,5],[9,13],[2,4],[15,12],[6,11]], r2:[[11,1],[2,3],[14,12],[5,6],[8,10],[13,7],[4,15]], x:[10,9]},
+    {iso:"2027-04-17", r1:[[1,5],[12,11],[7,9],[6,2],[15,3],[10,13],[14,4]], r2:[[3,1],[2,8],[4,12],[13,5],[7,14],[9,11],[15,10]], x:[8,6]},
+    {iso:"2027-05-29", r1:[[5,2],[4,13],[10,6],[3,8],[12,9],[11,15],[1,7]], r2:[[8,1],[9,3],[4,7],[5,14],[13,6],[12,10],[2,15]], x:[11,14]},
+    {iso:"2027-06-05", r1:[[1,2],[12,5],[6,15],[11,4],[8,13],[10,9],[14,3]], r2:[[10,1],[3,13],[9,4],[15,5],[6,8],[7,12],[14,11]], x:[7,2]}
+  ];
+
+  var MONTHS = ["JAN","FEV","MAR","ABR","MAI","JUN","JUL","AGO","SET","OUT","NOV","DEZ"];
+  var WEEKDAYS = ["Domingo","Segunda","Terça","Quarta","Quinta","Sexta","Sábado"];
+  var KEY = "taca-wf-zona2";
+
+  var over = { cities: {}, gps: {}, teams: {} };
+  var canWrite = false;
+  var mode = "pending"; /* pending | shared | local | readonly */
+  var editing = null;   /* {kind:"city"|"team", key:"3"} */
+  var ref = null;
+  var dl = {
+    save: function (o) {
+      return new Promise(function (resolve, reject) {
+        try {
+          var url = URL.createObjectURL(new Blob([o.data], { type: "application/pdf" }));
+          var a = document.createElement("a");
+          a.href = url; a.download = o.filename;
+          document.body.appendChild(a); a.click(); a.remove();
+          setTimeout(function () { URL.revokeObjectURL(url); }, 4000);
+          resolve({ status: "saved" });
+        } catch (e) { reject(e); }
+      });
+    }
+  };
+  var chain = Promise.resolve();
+
+  var app = document.getElementById("app");
+  var statusEl = document.getElementById("status");
+
+  function esc(s) {
+    return String(s).replace(/[&<>"']/g, function (c) {
+      return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c];
+    });
+  }
+  function teamName(p) { return over.teams[p] || TEAMS0[p - 1]; }
+  function cityOf(d) { return over.cities[d] || ""; }
+  function dparts(iso) {
+    var a = iso.split("-").map(Number);
+    return { y: a[0], m: a[1], d: a[2], wd: new Date(Date.UTC(a[0], a[1] - 1, a[2])).getUTCDay() };
+  }
+
+  var ICON_PIN = '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 21s-7-6.2-7-11.5A7 7 0 0 1 19 9.5C19 14.8 12 21 12 21z"/><circle cx="12" cy="9.5" r="2.5"/></svg>';
+  var ICON_NAV = '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 11l18-8-8 18-2-8-8-2z"/></svg>';
+  var ICON_EDIT = '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 20h4L19 9a2.8 2.8 0 0 0-4-4L4 16v4z"/></svg>';
+  var ICON_DL = '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 4v11M7 11l5 5 5-5M5 20h14"/></svg>';
+  var ICON_CHEV = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 5l7 7-7 7"/></svg>';
+  var ICON_BACK = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg>';
+
+  function route() {
+    var h = location.hash || "";
+    var m = /^#clube-(\d+)$/.exec(h);
+    if (m && +m[1] >= 1 && +m[1] <= TEAMS0.length) return { view: "clube", team: +m[1] };
+    if (h === "#calendario") return { view: "calendario" };
+    return { view: "clubes" };
+  }
+
+  /* ---------- pieces ---------- */
+  function cityBlock(d) {
+    if (editing && editing.kind === "city" && editing.key === String(d)) {
+      return '<form class="inline" data-form="city" data-key="' + d + '">' +
+        '<input id="edit-input" type="text" maxlength="60" autocomplete="off" placeholder="Cidade que acolhe" aria-label="Cidade que acolhe as jornadas" value="' + esc(cityOf(d)) + '">' +
+        '<input id="edit-gps" type="text" maxlength="500" autocomplete="off" inputmode="url" placeholder="Link GPS (Google Maps, Waze...)" aria-label="Link GPS do pavilhão" value="' + esc(over.gps[d] || '') + '">' +
+        '<button type="submit" class="btn primary">Guardar</button>' +
+        '<button type="button" class="btn" data-action="cancel">Cancelar</button></form>';
+    }
+    var c = cityOf(d);
+    var txt = c ? '<span class="cityname">' + esc(c) + '</span>' : '<span class="cityname pending">Cidade por definir</span>';
+    var g = over.gps[d];
+    var gpsLink = g ? '<a class="btn gps" href="' + esc(g) + '" target="_blank" rel="noopener noreferrer">' + ICON_NAV + '<span>GPS</span></a>' : '';
+    var btn = canWrite ? '<button type="button" class="btn iconbtn" data-action="edit-city" data-key="' + d + '" aria-label="Editar cidade">' + ICON_EDIT + '<span>Editar</span></button>' : '';
+    return '<span class="label">' + ICON_PIN + ' Cidade</span>' + txt + gpsLink + btn;
+  }
+
+  function dateCol(d) {
+    var p = dparts(DATES[d].iso);
+    return '<div class="when"><span class="day">' + (p.d < 10 ? "0" + p.d : p.d) + '</span><span class="mon">' + MONTHS[p.m - 1] + ' ' + p.y + '</span><span class="wd">' + WEEKDAYS[p.wd] + '</span></div>';
+  }
+
+  function find(list, t) {
+    for (var i = 0; i < list.length; i++) if (list[i][0] === t || list[i][1] === t) return list[i];
+    return null;
+  }
+  function opp(g, t) { return g[0] === t ? g[1] : g[0]; }
+  function oppLink(o) {
+    return '<a class="opp" href="#clube-' + o + '"><span class="p">P' + o + '</span><span class="n">' + esc(teamName(o)) + '</span></a>';
+  }
+
+  /* ---------- views ---------- */
+  function viewClubes() {
+    var h = '<ol class="clubs">';
+    for (var p = 1; p <= TEAMS0.length; p++) {
+      h += '<li><a href="#clube-' + p + '"><span class="posnum"><small>P</small>' + p + '</span><span class="cname">' + esc(teamName(p)) + '</span><span class="chev">' + ICON_CHEV + '</span></a></li>';
+    }
+    return h + '</ol>';
+  }
+
+  function viewClube(t) {
+    var nameHtml;
+    if (editing && editing.kind === "team" && editing.key === String(t)) {
+      nameHtml = '<form class="inline" data-form="team" data-key="' + t + '"><input id="edit-input" type="text" maxlength="60" autocomplete="off" aria-label="Nome do clube" value="' + esc(teamName(t)) + '"><button type="submit" class="btn primary">Guardar</button><button type="button" class="btn" data-action="cancel">Cancelar</button></form>';
+    } else {
+      nameHtml = '<h2 class="tname">' + esc(teamName(t)) + '</h2>';
+    }
+    var editName = (CAN_RENAME_TEAMS && canWrite && !(editing && editing.kind === "team")) ? '<div style="margin-top:8px"><button type="button" class="btn iconbtn" data-action="edit-team" data-key="' + t + '">' + ICON_EDIT + '<span>Editar nome</span></button></div>' : '';
+
+    var h = '<a class="back" href="#clubes">' + ICON_BACK + ' Clubes</a>' + pdfBar('pdf-team', t, 'Descarregar PDF desta equipa') +
+      '<div class="teamhead"><span class="posnum"><small>P</small>' + t + '</span><div>' + nameHtml + '<div class="tsub">18 jogos em 9 datas</div>' + editName + '</div></div>';
+
+    for (var d = 0; d < DATES.length; d++) {
+      var D = DATES[d];
+      var g1 = find(D.r1, t), g2 = find(D.r2, t), gx = (D.x[0] === t || D.x[1] === t) ? D.x : null;
+      var rows = '';
+      var j8 = gx ? '<span class="slot extra">Jogo J8</span>' : '';
+      var cell1 = g1 ? '<span class="slot">' + (2 * d + 1) + '.ª Jorn.</span>' + oppLink(opp(g1, t)) : (gx ? '<span class="slot">' + (2 * d + 1) + '.ª Jorn.</span>' + oppLink(opp(gx, t)) : '<span class="slot">' + (2 * d + 1) + '.ª Jorn.</span><span class="rest">Descansa</span>');
+      var cell2 = g2 ? '<span class="slot">' + (2 * d + 2) + '.ª Jorn.</span>' + oppLink(opp(g2, t)) : (gx ? '<span class="slot">' + (2 * d + 2) + '.ª Jorn.</span>' + oppLink(opp(gx, t)) : '<span class="slot">' + (2 * d + 2) + '.ª Jorn.</span><span class="rest">Descansa</span>');
+      rows += '<div class="game">' + cell1 + '</div><div class="game">' + cell2 + '</div>';
+      h += '<section class="fix" aria-label="Jornadas ' + (2 * d + 1) + ' e ' + (2 * d + 2) + '">' + dateCol(d) +
+        '<div class="what"><div class="cityline">' + cityBlock(d) + '</div><div class="jr">Jornadas ' + (2 * d + 1) + ' e ' + (2 * d + 2) + '</div>' + rows + '</div></section>';
+    }
+    return h;
+  }
+
+  function matchLi(g) {
+    return '<li><a href="#clube-' + g[0] + '"><span class="p">P' + g[0] + '</span> ' + esc(teamName(g[0])) + '</a><span class="x">×</span><a href="#clube-' + g[1] + '"><span class="p">P' + g[1] + '</span> ' + esc(teamName(g[1])) + '</a></li>';
+  }
+
+  function pdfBar(action, key, label) {
+    if (!dl) return '';
+    return '<div class="printbar"><button type="button" class="btn" data-action="' + action + '" data-key="' + key + '">' + ICON_DL + '<span>' + label + '</span></button></div>';
+  }
+
+  var MONTHS_L = ["janeiro","fevereiro","março","abril","maio","junho","julho","agosto","setembro","outubro","novembro","dezembro"];
+  function longDate(iso) {
+    var p = dparts(iso);
+    return WEEKDAYS[p.wd] + ", " + p.d + " de " + MONTHS_L[p.m - 1] + " de " + p.y;
+  }
+  function j8text(D) {
+    var s = [];
+    D.x.forEach(function (t) {
+      if (restsIn(D.r1, t)) s.push("P" + t + " na 1.ª jornada");
+      if (restsIn(D.r2, t)) s.push("P" + t + " na 2.ª jornada");
+    });
+    return "O J8 conta para a jornada em que a equipa descansa: " + s.join(" e ") + ".";
+  }
+  function slug(s) {
+    return s.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "");
+  }
+
+  function buildPdf(team) {
+    var J = window.jspdf && window.jspdf.jsPDF;
+    if (!J) return null;
+    var doc = new J({ unit: "mm", format: "a4" });
+    var M = 16, W = 210 - 2 * M, y = M;
+    function put(str, size, bold, indent, gap, rgb) {
+      doc.setFont("helvetica", bold ? "bold" : "normal");
+      doc.setFontSize(size);
+      var c = rgb || [20, 38, 27];
+      doc.setTextColor(c[0], c[1], c[2]);
+      var lines = doc.splitTextToSize(str, W - indent);
+      var lh = size * 0.42;
+      if (y + lines.length * lh > 297 - M) { doc.addPage(); y = M; }
+      lines.forEach(function (ln) { y += lh; doc.text(ln, M + indent, y); });
+      y += gap;
+    }
+    function rule() {
+      doc.setDrawColor(190, 200, 190);
+      doc.line(M, y, M + W, y);
+      y += 4;
+    }
+    function dateHead(d) {
+      var need = team ? 40 : 100;
+      if (y + need > 297 - M) { doc.addPage(); y = M; }
+      put(longDate(DATES[d].iso), 13, true, 0, 1.5, [15, 122, 74]);
+      var c = cityOf(d);
+      put("Cidade: " + (c || "por definir"), 11, true, 0, 1);
+      if (over.gps[d]) put("GPS: " + over.gps[d], 9, false, 0, 1.5, [90, 107, 96]);
+    }
+    function game(g) { return "P" + g[0] + " " + teamName(g[0]) + "  x  P" + g[1] + " " + teamName(g[1]); }
+
+    put("Taça Nacional Walking Football", 11, false, 0, 1, [15, 122, 74]);
+    if (team) {
+      put("P" + team + " " + teamName(team), 22, true, 0, 1);
+      put("Zona 2 · 18 jogos em 9 datas", 10, false, 0, 6, [90, 107, 96]);
+    } else {
+      put("Calendário da Zona 2", 22, true, 0, 6);
+    }
+    rule();
+
+    for (var d = 0; d < DATES.length; d++) {
+      var D = DATES[d];
+      dateHead(d);
+      if (team) {
+        var g1 = find(D.r1, team), g2 = find(D.r2, team), gx = (D.x[0] === team || D.x[1] === team) ? D.x : null;
+        var a = g1 || gx, b = g2 || gx;
+        put((2 * d + 1) + ".ª Jornada:  " + (a ? "P" + opp(a, team) + " " + teamName(opp(a, team)) : "Descansa"), 11, false, 4, 1);
+        put((2 * d + 2) + ".ª Jornada:  " + (b ? "P" + opp(b, team) + " " + teamName(opp(b, team)) : "Descansa"), 11, false, 4, 3);
+      } else {
+        put((2 * d + 1) + ".ª Jornada", 10, true, 2, 0.5, [90, 107, 96]);
+        D.r1.forEach(function (g) { put(game(g), 10, false, 6, 0.3); });
+        put((2 * d + 2) + ".ª Jornada", 10, true, 2, 0.5, [90, 107, 96]);
+        D.r2.forEach(function (g) { put(game(g), 10, false, 6, 0.3); });
+        put("Jogo J8", 10, true, 2, 0.5, [185, 74, 27]);
+        put(game(D.x), 10, false, 6, 0.3);
+        put(j8text(D), 9, false, 6, 3, [90, 107, 96]);
+      }
+      if (d < DATES.length - 1) rule();
+    }
+    return doc;
+  }
+
+  function exportPdf(team) {
+    var doc = buildPdf(team);
+    if (!doc) { setStatus("Não foi possível gerar o PDF.", true); return; }
+    var name = team ? "taca-walking-football-p" + team + "-" + slug(teamName(team)) + ".pdf" : "taca-walking-football-calendario-zona2.pdf";
+    dl.save({ filename: name, data: doc.output("arraybuffer") }).then(function () {
+      setStatus("PDF guardado.");
+    }, function (err) {
+      if (err && err.code === "declined") return;
+      setStatus("Não foi possível guardar o PDF.", true);
+    });
+  }
+
+  function restsIn(list, t) { return !find(list, t); }
+  function j8note(D) {
+    var a = D.x[0], b = D.x[1], r1 = [], r2 = [];
+    [a, b].forEach(function (t) { if (restsIn(D.r1, t)) r1.push(t); if (restsIn(D.r2, t)) r2.push(t); });
+    var s = [];
+    r1.forEach(function (t) { s.push('P' + t + ' na 1.ª jornada'); });
+    r2.forEach(function (t) { s.push('P' + t + ' na 2.ª jornada'); });
+    return '<p class="tsub">O J8 conta para a jornada em que a equipa descansa: ' + s.join(' e ') + '.</p>';
+  }
+
+  function viewCalendario() {
+    var h = pdfBar('pdf-all', '', 'Descarregar PDF do calendário completo');
+    for (var d = 0; d < DATES.length; d++) {
+      var D = DATES[d];
+      h += '<section class="fix">' + dateCol(d) + '<div class="what"><div class="cityline">' + cityBlock(d) + '</div><div class="jr">Jornadas ' + (2 * d + 1) + ' e ' + (2 * d + 2) + '</div>' +
+        '<details class="all"><summary>Ver os 15 jogos</summary>' +
+        '<h4>' + (2 * d + 1) + '.ª Jornada</h4><ul class="matches">' + D.r1.map(matchLi).join('') + '</ul>' +
+        '<h4>' + (2 * d + 2) + '.ª Jornada</h4><ul class="matches">' + D.r2.map(matchLi).join('') + '</ul>' +
+        '<h4>Jogo J8 (equipas que descansam)</h4><ul class="matches">' + matchLi(D.x) + '</ul>' + j8note(D) + '</details></div></section>';
+    }
+    return h;
+  }
+
+  function setStatus(msg, isErr) {
+    statusEl.textContent = msg || "";
+    statusEl.className = "note" + (isErr ? " err" : "");
+  }
+  function idleNote() {
+    if (mode === "shared") return "Qualquer pessoa pode editar a cidade e o link GPS de cada data. As alterações ficam guardadas para todos.";
+    if (mode === "local") return "As alterações ficam guardadas apenas neste dispositivo.";
+    return "";
+  }
+
+  function render() {
+    var r = route();
+    document.getElementById("tab-clubes").setAttribute("aria-current", r.view === "calendario" ? "false" : "page");
+    document.getElementById("tab-calendario").setAttribute("aria-current", r.view === "calendario" ? "page" : "false");
+    if (r.view === "clube") app.innerHTML = viewClube(r.team);
+    else if (r.view === "calendario") app.innerHTML = viewCalendario();
+    else app.innerHTML = viewClubes();
+    if (editing) {
+      var inp = document.getElementById("edit-input");
+      if (inp) { inp.focus(); inp.select(); }
+    }
+  }
+
+  /* ---------- persistence ---------- */
+  function persist(updates) {
+    if (mode === "local" || !DB_URL) {
+      try { localStorage.setItem(KEY, JSON.stringify(over)); } catch (e) {}
+      return;
+    }
+    chain = chain.then(function () {
+      return fetch(DB_URL + "/zona2.json", { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify(updates) });
+    }).then(function (r) {
+      if (!r.ok) throw new Error("http " + r.status);
+      setStatus(idleNote());
+    }).catch(function () {
+      setStatus("Não foi possível guardar. Confirma a ligação e tenta outra vez.", true);
+    });
+  }
+
+  function cleanUrl(u) {
+    u = (u || "").trim();
+    if (!u) return "";
+    if (!/^https?:\/\//i.test(u)) u = "https://" + u;
+    try { return new URL(u).href; } catch (e) { return ""; }
+  }
+
+  function saveEdit(kind, key, value, gps) {
+    value = value.replace(/\s+/g, " ").trim();
+    var up = {};
+    if (kind === "city") {
+      if (value) over.cities[key] = value; else delete over.cities[key];
+      var gu = cleanUrl(gps);
+      if (gu) over.gps[key] = gu; else delete over.gps[key];
+      up["cities/" + key] = value || null;
+      up["gps/" + key] = gu || null;
+    } else {
+      if (value && value !== TEAMS0[+key - 1]) over.teams[key] = value; else delete over.teams[key];
+      up["teams/" + key] = over.teams[key] || null;
+    }
+    editing = null;
+    render();
+    persist(up);
+  }
+
+  /* ---------- events ---------- */
+  app.addEventListener("click", function (e) {
+    var b = e.target.closest("[data-action]");
+    if (!b) return;
+    var a = b.getAttribute("data-action");
+    if (a === "pdf-team") { exportPdf(+b.getAttribute("data-key")); return; }
+    if (a === "pdf-all") { exportPdf(0); return; }
+    if (a === "edit-city") editing = { kind: "city", key: b.getAttribute("data-key") };
+    else if (a === "edit-team") editing = { kind: "team", key: b.getAttribute("data-key") };
+    else if (a === "cancel") editing = null;
+    render();
+  });
+  app.addEventListener("submit", function (e) {
+    var f = e.target.closest("form[data-form]");
+    if (!f) return;
+    e.preventDefault();
+    var gi = document.getElementById("edit-gps");
+    saveEdit(f.getAttribute("data-form"), f.getAttribute("data-key"), document.getElementById("edit-input").value, gi ? gi.value : "");
+  });
+  app.addEventListener("keydown", function (e) {
+    if (e.key === "Escape" && editing) { editing = null; render(); }
+  });
+  window.addEventListener("hashchange", function () {
+    editing = null;
+    render();
+    window.scrollTo(0, 0);
+  });
+
+  /* ---------- start ---------- */
+  render();
+
+  function loadLocal() {
+    try {
+      var raw = localStorage.getItem(KEY);
+      if (raw) {
+        var o = JSON.parse(raw);
+        over = { cities: o.cities || {}, gps: o.gps || {}, teams: o.teams || {} };
+      }
+    } catch (e) {}
+  }
+
+  function startLocal() {
+    mode = "local";
+    canWrite = true;
+    loadLocal();
+    setStatus(idleNote());
+    render();
+  }
+
+  function applyRemote(data) {
+    over = { cities: Object.assign({}, data && data.cities), gps: Object.assign({}, data && data.gps), teams: Object.assign({}, data && data.teams) };
+  }
+  function pull() {
+    return fetch(DB_URL + "/zona2.json").then(function (r) {
+      if (!r.ok) throw new Error("http " + r.status);
+      return r.json();
+    }).then(function (data) {
+      var before = JSON.stringify(over);
+      applyRemote(data);
+      if (!editing && JSON.stringify(over) !== before) render();
+    });
+  }
+  function init() {
+    if (!DB_URL) { startLocal(); return; }
+    DB_URL = DB_URL.replace(/\/+$/, "");
+    mode = "shared";
+    canWrite = true;
+    setStatus(idleNote());
+    render();
+    pull().catch(function () { setStatus("Não foi possível carregar as cidades guardadas.", true); });
+    setInterval(function () { if (!document.hidden) pull().catch(function () {}); }, 20000);
+    document.addEventListener("visibilitychange", function () { if (!document.hidden) pull().catch(function () {}); });
+  }
+  init();
+})();
+</script>
+</body>
+</html>
