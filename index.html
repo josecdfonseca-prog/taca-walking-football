@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <link rel="manifest" href="manifest.webmanifest">
-<meta name="theme-color" content="#12111A">
+<meta name="theme-color" id="theme-color" content="#F6F6F9">
 <link rel="icon" type="image/png" href="icon-192.png">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
 <meta name="mobile-web-app-capable" content="yes">
@@ -16,6 +16,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=Source+Sans+3:wght@400;600&display=swap">
+<script>(function () { var t = "light"; try { if (localStorage.getItem("taca-wf-theme") === "dark") t = "dark"; } catch (e) {} document.documentElement.setAttribute("data-theme", t); })();</script>
 <style>
 /* Layout: zone picker, then fixture-list reading. Big condensed numerals (positions, match days) in a left column, names and opponents to the right, hairline rules instead of cards. */
 :root {
@@ -179,6 +180,11 @@ nav.tabs { margin-top: 10px; }
 .pending-note { margin-top: 16px; padding: 14px 16px; border-left: 4px solid var(--zc); background: var(--accent-soft); border-radius: 0 3px 3px 0; max-width: 60ch; }
 
 /* Logos, game meta */
+.themebar { display: flex; justify-content: flex-end; margin: 0 0 10px; }
+.seg { font: inherit; font-size: 13px; padding: 5px 12px; background: transparent; color: var(--muted); border: 1px solid var(--line); cursor: pointer; }
+.seg:first-child { border-radius: 6px 0 0 6px; }
+.seg:last-child { border-radius: 0 6px 6px 0; border-left: 0; }
+.seg[aria-pressed="true"] { background: var(--ink); color: var(--bg); border-color: var(--ink); font-weight: 600; }
 .when .day.two { font-size: 30px; line-height: 1; }
 .fix { grid-template-columns: 86px minmax(0, 1fr); }
 .when .hrl { font-size: 11px; letter-spacing: 0.04em; color: var(--muted); margin-top: 6px; }
@@ -313,13 +319,14 @@ ul.matches a:hover { text-decoration: underline; }
 @media (prefers-reduced-motion: reduce) { * { transition: none !important; animation: none !important; } }
 .teamhead > div { min-width: 0; flex: 1; }
 .teamhead .logo { align-self: center; }
-html { padding-top: env(safe-area-inset-top, 0px); padding-bottom: env(safe-area-inset-bottom, 0px); }
+html { color-scheme: light; padding-top: env(safe-area-inset-top, 0px); padding-bottom: env(safe-area-inset-bottom, 0px); }
 body { margin: 0; }
 </style>
 </head>
 <body>
 
 <div class="wrap">
+  <div class="themebar" role="group" aria-label="Fundo da página"><button type="button" class="seg" data-theme-set="light" aria-pressed="true">Fundo branco</button><button type="button" class="seg" data-theme-set="dark" aria-pressed="false">Fundo preto</button></div>
   <div class="stripes" aria-hidden="true"><i></i><i></i><i></i><i></i></div>
   <header class="top">
     <div class="masthead">
@@ -964,6 +971,22 @@ body { margin: 0; }
     render();
     window.scrollTo(0, 0);
   });
+
+  /* fundo branco / preto, guardado neste dispositivo */
+  function applyTheme(t, save) {
+    document.documentElement.setAttribute("data-theme", t);
+    var meta = document.getElementById("theme-color");
+    if (meta) meta.setAttribute("content", t === "dark" ? "#12111A" : "#F6F6F9");
+    var bs = document.querySelectorAll("[data-theme-set]");
+    for (var i = 0; i < bs.length; i++) bs[i].setAttribute("aria-pressed", bs[i].getAttribute("data-theme-set") === t ? "true" : "false");
+    if (save) { try { localStorage.setItem("taca-wf-theme", t); } catch (e) {} }
+  }
+  (function () {
+    var cur = document.documentElement.getAttribute("data-theme") === "dark" ? "dark" : "light";
+    applyTheme(cur, false);
+    var bs = document.querySelectorAll("[data-theme-set]");
+    for (var i = 0; i < bs.length; i++) bs[i].addEventListener("click", function (e) { applyTheme(e.currentTarget.getAttribute("data-theme-set"), true); });
+  })();
 
   /* poster lightbox */
   (function () {
