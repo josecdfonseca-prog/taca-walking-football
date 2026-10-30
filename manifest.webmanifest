@@ -1,0 +1,17 @@
+{
+  "name": "Taça Nacional Walking Football",
+  "short_name": "Walking Football",
+  "description": "Zonas, clubes, jogos, cidades e resultados da Taça Nacional de Walking Football 2026/27.",
+  "lang": "pt",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#12111A",
+  "theme_color": "#12111A",
+  "icons": [
+    { "src": "icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}
