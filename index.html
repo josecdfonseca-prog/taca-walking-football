@@ -180,6 +180,27 @@ nav.tabs { margin-top: 10px; }
 .pending-note { margin-top: 16px; padding: 14px 16px; border-left: 4px solid var(--zc); background: var(--accent-soft); border-radius: 0 3px 3px 0; max-width: 60ch; }
 
 /* Logos, game meta */
+nav.tabs { gap: 14px; overflow-x: auto; }
+nav.tabs a { font-size: 16px; white-space: nowrap; }
+form.res .fr { display: flex; align-items: center; gap: 8px; width: 100%; flex-wrap: wrap; }
+form.res .fl { min-width: 74px; font-size: 13px; color: var(--muted); }
+form.inline input[type="checkbox"] { flex: none; width: 20px; height: 20px; min-height: 0; accent-color: var(--zc); }
+.chk { display: flex; align-items: center; gap: 8px; width: 100%; font-size: 14px; }
+form.res select { min-height: 40px; font: inherit; font-size: 15px; color: var(--ink); background: var(--surface); border: 1px solid var(--accent); border-radius: 6px; padding: 4px 8px; max-width: 100%; }
+.resmeta { flex-basis: 100%; font-size: 13px; color: var(--muted); }
+.tblwrap { overflow-x: auto; margin-top: 10px; }
+table.std { border-collapse: collapse; width: 100%; min-width: 600px; font-variant-numeric: tabular-nums; font-size: 15px; }
+table.std th { font-family: var(--font-display); font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; font-size: 14px; padding: 8px 6px; background: var(--zc); color: var(--zc-ink); text-align: center; white-space: nowrap; }
+table.std td { padding: 8px 6px; text-align: center; border-bottom: 1px solid var(--line); }
+table.std th.l, table.std td.l { text-align: left; position: sticky; left: 0; min-width: 190px; background: var(--bg); }
+table.std th.l { background: var(--zc); }
+table.std td.l a { display: flex; align-items: center; gap: 8px; text-decoration: none; }
+table.std .pos { width: 20px; text-align: right; color: var(--muted); }
+table.std .nm { font-weight: 600; }
+table.std td.pts { font-family: var(--font-display); font-weight: 700; font-size: 20px; color: var(--zc-text); }
+.rulelist { margin: 6px 0 0; padding-left: 18px; display: grid; gap: 6px; font-size: 14px; max-width: 62ch; }
+.rulelist .assume { color: var(--muted); }
+
 .themebar { display: flex; justify-content: flex-end; margin: 0 0 10px; }
 .seg { font: inherit; font-size: 13px; padding: 5px 12px; background: transparent; color: var(--muted); border: 1px solid var(--line); cursor: pointer; }
 .seg:first-child { border-radius: 6px 0 0 6px; }
@@ -192,7 +213,7 @@ nav.tabs { margin-top: 10px; }
 .resline { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 10px; margin-top: 4px; }
 .resval { font-size: 15px; }
 .resval b { font-family: var(--font-display); font-size: 20px; letter-spacing: 0.04em; font-variant-numeric: tabular-nums; color: var(--zc-text); }
-form.res input { flex: 0 0 56px; min-width: 0; width: 56px; text-align: center; font-size: 18px; font-variant-numeric: tabular-nums; }
+form.res input[type="text"] { flex: 0 0 56px; min-width: 0; width: 56px; text-align: center; font-size: 18px; font-variant-numeric: tabular-nums; }
 form.res .dash { font-weight: 700; color: var(--muted); }
 .resbadge { margin-left: auto; font-family: var(--font-display); font-weight: 700; color: var(--zc-text); font-variant-numeric: tabular-nums; }
 @media (max-width: 380px) { .fix { grid-template-columns: 76px minmax(0, 1fr); } }
@@ -479,9 +500,9 @@ body { margin: 0; }
   var app = document.getElementById("app");
   var statusEl = document.getElementById("status");
 
-  function emptyOver() { return { cities: {}, gps: {}, teams: {}, results: {} }; }
+  function emptyOver() { return { cities: {}, gps: {}, teams: {}, results: {}, fouls: {}, nosho: {}, fem: {} }; }
   function normalize(d) {
-    return { cities: Object.assign({}, d && d.cities), gps: Object.assign({}, d && d.gps), teams: Object.assign({}, d && d.teams), results: Object.assign({}, d && d.results) };
+    return { cities: Object.assign({}, d && d.cities), gps: Object.assign({}, d && d.gps), teams: Object.assign({}, d && d.teams), results: Object.assign({}, d && d.results), fouls: Object.assign({}, d && d.fouls), nosho: Object.assign({}, d && d.nosho), fem: Object.assign({}, d && d.fem) };
   }
   function esc(s) {
     return String(s).replace(/[&<>"']/g, function (c) {
@@ -528,10 +549,10 @@ body { margin: 0; }
 
   /* ---------- routing: #  |  #zona-2  |  #zona-2-calendario  |  #zona-2-clube-7 ---------- */
   function route() {
-    var m = /^#zona-([1-5])(?:-(calendario)|-clube-(\d+))?$/.exec(location.hash || "");
+    var m = /^#zona-([1-5])(?:-(calendario|classificacao)|-clube-(\d+))?$/.exec(location.hash || "");
     if (!m) return { view: "home" };
     var zone = +m[1];
-    if (m[2]) return { view: "calendario", zone: zone };
+    if (m[2]) return { view: m[2] === "classificacao" ? "classificacao" : "calendario", zone: zone };
     if (m[3]) {
       var z = ZONES[zone - 1], n = +m[3];
       if (z.teams && n >= 1 && n <= z.teams.length) return { view: "clube", zone: zone, team: n };
@@ -574,20 +595,44 @@ body { margin: 0; }
   }
   function resKey(d, g) { return d + "_" + g[0] + "_" + g[1]; }
   function resPretty(r) { return r ? r.replace("-", " - ") : ""; }
-  function resultBlock(d, g) {
+  function pair2(v) { return v ? v.split("-").map(Number) : null; }
+  function resObj(rk) {
+    return { res: pair2(over.results[rk]), fouls: pair2(over.fouls[rk]), nosho: over.nosho[rk] || "", fem: pair2(over.fem[rk]) || [0, 0] };
+  }
+  function resBadge(d, g) {
     var rk = resKey(d, g);
+    if (over.nosho[rk]) return '<span class="resbadge" title="Falta de comparência">FC</span>';
+    return over.results[rk] ? '<span class="resbadge">' + esc(resPretty(over.results[rk])) + '</span>' : '';
+  }
+  function numInput(id, label, v) {
+    return '<input id="' + id + '" type="text" inputmode="numeric" pattern="[0-9]*" maxlength="2" autocomplete="off" aria-label="' + esc(label) + '" value="' + (v == null ? "" : v) + '">';
+  }
+  function resultBlock(d, g) {
+    var rk = resKey(d, g), o = resObj(rk);
     if (editing && editing.kind === "result" && editing.key === rk) {
-      var cur = (over.results[rk] || "").split("-");
       return '<form class="inline res" data-form="result" data-key="' + rk + '">' +
-        '<input id="res-h" type="text" inputmode="numeric" pattern="[0-9]*" maxlength="2" autocomplete="off" aria-label="Golos de P' + g[0] + '" value="' + esc(cur[0] || "") + '">' +
-        '<span class="dash">-</span>' +
-        '<input id="res-a" type="text" inputmode="numeric" pattern="[0-9]*" maxlength="2" autocomplete="off" aria-label="Golos de P' + g[1] + '" value="' + esc(cur[1] || "") + '">' +
-        '<button type="submit" class="btn primary">Guardar</button><button type="button" class="btn" data-action="cancel">Cancelar</button></form>';
+        '<div class="fr"><span class="fl">Golos</span>' + numInput("res-h", "Golos de P" + g[0], o.res && o.res[0]) + '<span class="dash">-</span>' + numInput("res-a", "Golos de P" + g[1], o.res && o.res[1]) + '</div>' +
+        '<div class="fr"><span class="fl">Faltas</span>' + numInput("fou-h", "Faltas de P" + g[0], o.fouls && o.fouls[0]) + '<span class="dash">-</span>' + numInput("fou-a", "Faltas de P" + g[1], o.fouls && o.fouls[1]) + '</div>' +
+        '<label class="chk"><input type="checkbox" id="fem-h"' + (o.fem[0] ? ' checked' : '') + '> P' + g[0] + ' teve sempre uma jogadora em campo</label>' +
+        '<label class="chk"><input type="checkbox" id="fem-a"' + (o.fem[1] ? ' checked' : '') + '> P' + g[1] + ' teve sempre uma jogadora em campo</label>' +
+        '<div class="fr"><label class="fl" for="nosho">Falta de comparência</label><select id="nosho"><option value="">Nenhuma</option><option value="h"' + (o.nosho === "h" ? ' selected' : '') + '>P' + g[0] + ' não compareceu</option><option value="a"' + (o.nosho === "a" ? ' selected' : '') + '>P' + g[1] + ' não compareceu</option></select></div>' +
+        '<div class="fr"><button type="submit" class="btn primary">Guardar</button><button type="button" class="btn" data-action="cancel">Cancelar</button></div></form>';
     }
-    var r = over.results[rk];
-    var shown = r ? '<span class="resval">Resultado <b>' + esc(resPretty(r)) + '</b></span>' : '';
-    var btn = canWrite ? '<button type="button" class="btn iconbtn" data-action="edit-result" data-key="' + rk + '">' + ICON_EDIT + '<span>' + (r ? 'Editar' : 'Resultado') + '</span></button>' : '';
-    return (shown || btn) ? '<div class="resline">' + shown + btn + '</div>' : '';
+    var shown = '', meta = [];
+    if (o.nosho) {
+      shown = '<span class="resval">Falta de comparência: <b>P' + (o.nosho === "h" ? g[0] : g[1]) + '</b></span>';
+    } else if (o.res) {
+      shown = '<span class="resval">Resultado <b>' + o.res[0] + ' - ' + o.res[1] + '</b></span>';
+      if (o.fouls) meta.push("Faltas " + o.fouls[0] + " - " + o.fouls[1]);
+      var fem = [];
+      if (o.fem[0]) fem.push("P" + g[0]);
+      if (o.fem[1]) fem.push("P" + g[1]);
+      if (fem.length) meta.push("Jogadora em campo: " + fem.join(", "));
+    }
+    var has = !!(o.nosho || o.res);
+    var btn = canWrite ? '<button type="button" class="btn iconbtn" data-action="edit-result" data-key="' + rk + '">' + ICON_EDIT + '<span>' + (has ? 'Editar' : 'Resultado') + '</span></button>' : '';
+    if (!shown && !btn) return '';
+    return '<div class="resline">' + shown + btn + (meta.length ? '<span class="resmeta">' + esc(meta.join(" · ")) + '</span>' : '') + '</div>';
   }
   function gameCell(label, d, g, t) {
     if (!g) return '<span class="slot">' + label + '</span><span class="rest">Descansa</span>';
@@ -639,7 +684,8 @@ body { margin: 0; }
       '<div class="zbanner"><span class="znum">' + Z.id + '</span><div><div class="zlabel">Zona ' + Z.id + '</div><div class="zadr">' + adrs + '</div><div class="zmeta">' + Z.entities + ' entidades · ' + Z.dates.length + ' datas</div></div></div>' +
       '<nav class="tabs" aria-label="Secções da Zona ' + Z.id + '">' +
       '<a href="' + zhref("") + '"' + (tab === "clubes" ? ' aria-current="page"' : '') + '>Clubes</a>' +
-      '<a href="' + zhref("-calendario") + '"' + (tab === "calendario" ? ' aria-current="page"' : '') + '>Calendário</a></nav>';
+      '<a href="' + zhref("-calendario") + '"' + (tab === "calendario" ? ' aria-current="page"' : '') + '>Calendário</a>' +
+      '<a href="' + zhref("-classificacao") + '"' + (tab === "classificacao" ? ' aria-current="page"' : '') + '>Classificação</a></nav>';
   }
 
   /* ---------- views ---------- */
@@ -694,7 +740,71 @@ body { margin: 0; }
 
   function matchLi(g, d) {
     var st = slotText(d, g, true);
-    return '<li>' + (st ? '<span class="when2">' + esc(st) + '</span>' : '') + '<a href="' + zhref("-clube-" + g[0]) + '"><span class="p">P' + g[0] + '</span> ' + esc(teamName(g[0])) + '</a><span class="x">×</span><a href="' + zhref("-clube-" + g[1]) + '"><span class="p">P' + g[1] + '</span> ' + esc(teamName(g[1])) + '</a>' + (d !== undefined && over.results[resKey(d, g)] ? '<span class="resbadge">' + esc(resPretty(over.results[resKey(d, g)])) + '</span>' : '') + '</li>';
+    return '<li>' + (st ? '<span class="when2">' + esc(st) + '</span>' : '') + '<a href="' + zhref("-clube-" + g[0]) + '"><span class="p">P' + g[0] + '</span> ' + esc(teamName(g[0])) + '</a><span class="x">×</span><a href="' + zhref("-clube-" + g[1]) + '"><span class="p">P' + g[1] + '</span> ' + esc(teamName(g[1])) + '</a>' + (d !== undefined ? resBadge(d, g) : '') + '</li>';
+  }
+
+  function teamGame(d, which, t) {
+    var D = Z.matrix[d], list = which === 1 ? D.r1 : D.r2, g = find(list, t);
+    if (g) return g;
+    return (D.x && (D.x[0] === t || D.x[1] === t) && restsIn(list, t)) ? D.x : null;
+  }
+  function computeStandings() {
+    var n = Z.teams.length, S = [], cum = [], t, d, w;
+    for (t = 1; t <= n; t++) { S[t] = { t: t, J: 0, V: 0, E: 0, D: 0, FC: 0, gm: 0, gs: 0, pj: 0, pf: 0, pm: 0 }; cum[t] = { s: 0, n: 0 }; }
+    for (d = 0; d < Z.dates.length; d++) {
+      for (w = 1; w <= 2; w++) {
+        var entries = [], decided = true, foulsOk = true;
+        for (t = 1; t <= n; t++) {
+          var g = teamGame(d, w, t);
+          if (!g) continue;
+          var o = resObj(resKey(d, g)), home = g[0] === t, st = S[t], e = { t: t, excluded: false };
+          if (o.nosho) {
+            st.J++;
+            if (t === (o.nosho === "h" ? g[0] : g[1])) st.FC++; else { st.V++; st.pj += 3; }
+            e.excluded = true;
+          } else if (o.res) {
+            var my = o.res[home ? 0 : 1], th = o.res[home ? 1 : 0];
+            st.J++; st.gm += my; st.gs += th;
+            if (my > th) { st.V++; st.pj += 3; } else if (my === th) { st.E++; st.pj += 1; } else st.D++;
+            if (o.fem[home ? 0 : 1]) st.pm += 2;
+            if (o.fouls) { cum[t].s += o.fouls[home ? 0 : 1]; cum[t].n++; } else foulsOk = false;
+          } else { decided = false; e.excluded = true; }
+          entries.push(e);
+        }
+        if (decided && foulsOk) {
+          var el = entries.filter(function (x) { return !x.excluded && cum[x.t].n > 0; });
+          el.forEach(function (x) { x.avg = cum[x.t].s / cum[x.t].n; });
+          if (el.length) {
+            var sorted = el.map(function (x) { return x.avg; }).sort(function (a, b) { return a - b; });
+            var lim = sorted[Math.min(2, sorted.length - 1)];
+            el.forEach(function (x) { if (x.avg <= lim) S[x.t].pf += 2; });
+          }
+        }
+      }
+    }
+    var out = [];
+    for (t = 1; t <= n; t++) { S[t].pts = S[t].pj + S[t].pf + S[t].pm; S[t].avg = cum[t].n ? cum[t].s / cum[t].n : null; out.push(S[t]); }
+    out.sort(function (a, b) { return b.pts - a.pts || b.V - a.V || (b.gm - b.gs) - (a.gm - a.gs) || a.t - b.t; });
+    return out;
+  }
+  function viewClassificacao() {
+    var rows = computeStandings();
+    var h = zoneHead("classificacao");
+    h += '<p class="tsub" style="margin-top:12px">A classificação atualiza à medida que os resultados são inseridos na página de cada clube.</p>';
+    h += '<div class="tblwrap"><table class="std"><thead><tr><th class="l">Clube</th><th>J</th><th>V</th><th>E</th><th>D</th><th title="Faltas de comparência">FC</th><th title="Média de faltas por jogo">Méd. F</th><th title="Pontos de vitória e empate">Jogo</th><th title="Pontos das 3 menores médias de faltas">Faltas</th><th title="Pontos por jogadora em campo">Fem.</th><th>Pts</th></tr></thead><tbody>';
+    rows.forEach(function (r, i) {
+      h += '<tr><td class="l"><a href="' + zhref("-clube-" + r.t) + '"><span class="pos">' + (i + 1) + '</span>' + logo(r.t, 'sm') + '<span class="nm">' + esc(teamName(r.t)) + '</span></a></td>' +
+        '<td>' + r.J + '</td><td>' + r.V + '</td><td>' + r.E + '</td><td>' + r.D + '</td><td>' + r.FC + '</td><td>' + (r.avg === null ? '–' : r.avg.toFixed(1).replace('.', ',')) + '</td>' +
+        '<td>' + r.pj + '</td><td>' + r.pf + '</td><td>' + r.pm + '</td><td class="pts">' + r.pts + '</td></tr>';
+    });
+    h += '</tbody></table></div>';
+    h += '<details class="all rules"><summary>Como se pontua</summary><ul class="rulelist">' +
+      '<li><b>Vitória:</b> 3 pontos. <b>Empate:</b> 1 ponto. <b>Derrota:</b> 0 pontos.</li>' +
+      '<li><b>Faltas:</b> as 3 equipas com menor média de faltas no final de cada jornada ganham 2 pontos, exceto as equipas que não joguem por falta de comparência do adversário.</li>' +
+      '<li><b>Fem.:</b> equipas com jogadoras que tenham sempre pelo menos uma jogadora em campo em todos os jogos ganham 2 pontos.</li>' +
+      '<li><b>Falta de comparência:</b> 0 pontos para a equipa que não compareceu.</li>' +
+      '<li class="assume">Critérios que a regra não define e que a página aplica assim: o adversário de uma falta de comparência conta como vitória (3 pontos); a média de faltas é por jogo, acumulada até à jornada; em caso de empate na 3.ª menor média, todas as equipas empatadas ganham os 2 pontos; os pontos de faltas só são atribuídos quando todos os jogos da jornada têm resultado e faltas; desempate da classificação por pontos, vitórias e diferença de golos.</li></ul></details>';
+    return h;
   }
 
   function viewCalendario() {
@@ -741,6 +851,7 @@ body { margin: 0; }
     document.body.className = Z ? "zone-" + Z.id : "";
     if (r.view === "clube") app.innerHTML = viewClube(r.team);
     else if (r.view === "calendario") app.innerHTML = viewCalendario();
+    else if (r.view === "classificacao") app.innerHTML = viewClassificacao();
     else if (r.view === "clubes") app.innerHTML = viewClubes();
     else app.innerHTML = viewHome();
     if (!statusEl.classList.contains("err")) setStatus(idleNote());
@@ -757,12 +868,24 @@ body { margin: 0; }
     if (!/^https?:\/\//i.test(u)) u = "https://" + u;
     try { return new URL(u).href; } catch (e) { return ""; }
   }
-  function saveResult(rk, h, a) {
-    h = (h || "").replace(/\D/g, ""); a = (a || "").replace(/\D/g, "");
+  function saveResult(rk) {
+    function gv(id) { var e = document.getElementById(id); return e ? e.value.replace(/\D/g, "") : ""; }
+    var h = gv("res-h"), a = gv("res-a"), fh = gv("fou-h"), fa = gv("fou-a");
+    var ns = document.getElementById("nosho").value;
+    var femH = document.getElementById("fem-h").checked ? 1 : 0, femA = document.getElementById("fem-a").checked ? 1 : 0;
     var up = {};
-    if (!h && !a) { delete over.results[rk]; up["results/" + rk] = null; }
-    else if (!h || !a) { setStatus("Preenche os golos das duas equipas, ou deixa ambos vazios para apagar.", true); return; }
-    else { over.results[rk] = (+h) + "-" + (+a); up["results/" + rk] = over.results[rk]; }
+    function put(map, key, val) { if (val) over[map][rk] = val; else delete over[map][rk]; up[map + "/" + rk] = val || null; }
+    if (ns) {
+      put("nosho", rk, ns); put("results", rk, null); put("fouls", rk, null); put("fem", rk, null);
+    } else {
+      if ((h && !a) || (!h && a)) { setStatus("Preenche os golos das duas equipas.", true); return; }
+      if ((fh && !fa) || (!fh && fa)) { setStatus("Preenche as faltas das duas equipas.", true); return; }
+      if (!h && (fh || femH || femA)) { setStatus("Preenche os golos antes de guardar as faltas e a jogadora em campo.", true); return; }
+      put("nosho", rk, null);
+      put("results", rk, h ? (+h) + "-" + (+a) : null);
+      put("fouls", rk, fh ? (+fh) + "-" + (+fa) : null);
+      put("fem", rk, (femH || femA) ? femH + "-" + femA : null);
+    }
     editing = null;
     statusEl.className = "note";
     render();
@@ -958,7 +1081,7 @@ body { margin: 0; }
     var f = e.target.closest("form[data-form]");
     if (!f) return;
     e.preventDefault();
-    if (f.getAttribute("data-form") === "result") { saveResult(f.getAttribute("data-key"), document.getElementById("res-h").value, document.getElementById("res-a").value); return; }
+    if (f.getAttribute("data-form") === "result") { saveResult(f.getAttribute("data-key")); return; }
     var gi = document.getElementById("edit-gps");
     saveEdit(f.getAttribute("data-form"), f.getAttribute("data-key"), document.getElementById("edit-input").value, gi ? gi.value : "");
   });
