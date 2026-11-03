@@ -500,9 +500,9 @@ body { margin: 0; }
   var app = document.getElementById("app");
   var statusEl = document.getElementById("status");
 
-  function emptyOver() { return { cities: {}, gps: {}, teams: {}, results: {}, fouls: {}, nosho: {}, fem: {} }; }
+  function emptyOver() { return { cities: {}, gps: {}, teams: {}, results: {}, fouls: {}, nosho: {}, fem: {}, tf: {} }; }
   function normalize(d) {
-    return { cities: Object.assign({}, d && d.cities), gps: Object.assign({}, d && d.gps), teams: Object.assign({}, d && d.teams), results: Object.assign({}, d && d.results), fouls: Object.assign({}, d && d.fouls), nosho: Object.assign({}, d && d.nosho), fem: Object.assign({}, d && d.fem) };
+    return { cities: Object.assign({}, d && d.cities), gps: Object.assign({}, d && d.gps), teams: Object.assign({}, d && d.teams), results: Object.assign({}, d && d.results), fouls: Object.assign({}, d && d.fouls), nosho: Object.assign({}, d && d.nosho), fem: Object.assign({}, d && d.fem), tf: Object.assign({}, d && d.tf) };
   }
   function esc(s) {
     return String(s).replace(/[&<>"']/g, function (c) {
@@ -612,7 +612,6 @@ body { margin: 0; }
     if (editing && editing.kind === "result" && editing.key === rk) {
       return '<form class="inline res" data-form="result" data-key="' + rk + '">' +
         '<div class="fr"><span class="fl">Golos</span>' + numInput("res-h", "Golos de P" + g[0], o.res && o.res[0]) + '<span class="dash">-</span>' + numInput("res-a", "Golos de P" + g[1], o.res && o.res[1]) + '</div>' +
-        '<div class="fr"><span class="fl">Faltas</span>' + numInput("fou-h", "Faltas de P" + g[0], o.fouls && o.fouls[0]) + '<span class="dash">-</span>' + numInput("fou-a", "Faltas de P" + g[1], o.fouls && o.fouls[1]) + '</div>' +
         '<label class="chk"><input type="checkbox" id="fem-h"' + (o.fem[0] ? ' checked' : '') + '> P' + g[0] + ' teve sempre uma jogadora em campo</label>' +
         '<label class="chk"><input type="checkbox" id="fem-a"' + (o.fem[1] ? ' checked' : '') + '> P' + g[1] + ' teve sempre uma jogadora em campo</label>' +
         '<div class="fr"><label class="fl" for="nosho">Falta de comparência</label><select id="nosho"><option value="">Nenhuma</option><option value="h"' + (o.nosho === "h" ? ' selected' : '') + '>P' + g[0] + ' não compareceu</option><option value="a"' + (o.nosho === "a" ? ' selected' : '') + '>P' + g[1] + ' não compareceu</option></select></div>' +
@@ -623,7 +622,6 @@ body { margin: 0; }
       shown = '<span class="resval">Falta de comparência: <b>P' + (o.nosho === "h" ? g[0] : g[1]) + '</b></span>';
     } else if (o.res) {
       shown = '<span class="resval">Resultado <b>' + o.res[0] + ' - ' + o.res[1] + '</b></span>';
-      if (o.fouls) meta.push("Faltas " + o.fouls[0] + " - " + o.fouls[1]);
       var fem = [];
       if (o.fem[0]) fem.push("P" + g[0]);
       if (o.fem[1]) fem.push("P" + g[1]);
@@ -713,6 +711,23 @@ body { margin: 0; }
     return h + '</ol>';
   }
 
+  function foulsBlock(d, t) {
+    var k = d + "_" + t, v = over.tf[k];
+    if (editing && editing.kind === "tfoul" && editing.key === k) {
+      return '<form class="inline res" data-form="tfoul" data-key="' + k + '"><div class="fr"><label class="fl" for="tf-in">Faltas de ' + esc(teamName(t)) + ' nesta data</label>' +
+        '<input id="tf-in" type="text" inputmode="numeric" pattern="[0-9]*" maxlength="3" autocomplete="off" value="' + (v == null ? "" : esc(v)) + '"><button type="submit" class="btn primary">Guardar</button><button type="button" class="btn" data-action="cancel">Cancelar</button></div></form>';
+    }
+    var btn = canWrite ? '<button type="button" class="btn iconbtn" data-action="edit-tfoul" data-key="' + k + '">' + ICON_EDIT + '<span>' + (v == null ? 'Faltas' : 'Editar') + '</span></button>' : '';
+    if (v == null && !btn) return '';
+    return '<div class="resline tfl"><span class="resval">' + ('Faltas de ' + esc(teamName(t)) + ' nesta data' + (v == null ? '' : ': <b>' + esc(v) + '</b>')) + '</span>' + btn + '</div>';
+  }
+  function saveTfoul(k, val) {
+    val = String(val).replace(/\D/g, "");
+    var up = {};
+    if (val) { val = String(+val); over.tf[k] = val; } else delete over.tf[k];
+    up["tf/" + k] = val || null;
+    editing = null; statusEl.className = "note"; render(); platformSave(Z.id, up);
+  }
   function viewClube(t) {
     var nameHtml;
     if (editing && editing.kind === "team" && editing.key === String(t)) {
@@ -733,7 +748,7 @@ body { margin: 0; }
       var cell2 = gameCell((2 * d + 2) + '.ª Jorn.', d, b, t);
       h += '<section class="fix" aria-label="Jornadas ' + (2 * d + 1) + ' e ' + (2 * d + 2) + '">' + dateCol(d) +
         '<div class="what"><div class="cityline">' + cityBlock(d) + '</div><div class="jr">Jornadas ' + (2 * d + 1) + ' e ' + (2 * d + 2) + '</div>' +
-        '<div class="game">' + cell1 + '</div><div class="game">' + cell2 + '</div></div></section>';
+        '<div class="game">' + cell1 + '</div><div class="game">' + cell2 + '</div>' + foulsBlock(d, t) + '</div></section>';
     }
     return h;
   }
@@ -752,33 +767,37 @@ body { margin: 0; }
     var n = Z.teams.length, S = [], cum = [], t, d, w;
     for (t = 1; t <= n; t++) { S[t] = { t: t, J: 0, V: 0, E: 0, D: 0, FC: 0, gm: 0, gs: 0, pj: 0, pf: 0, pm: 0 }; cum[t] = { s: 0, n: 0 }; }
     for (d = 0; d < Z.dates.length; d++) {
-      for (w = 1; w <= 2; w++) {
-        var entries = [], decided = true, foulsOk = true;
-        for (t = 1; t <= n; t++) {
+      var entries = [], decided = true, foulsOk = true;
+      for (t = 1; t <= n; t++) {
+        var played = 0, ex = false, any = false;
+        for (w = 1; w <= 2; w++) {
           var g = teamGame(d, w, t);
           if (!g) continue;
-          var o = resObj(resKey(d, g)), home = g[0] === t, st = S[t], e = { t: t, excluded: false };
+          any = true;
+          var o = resObj(resKey(d, g)), home = g[0] === t, st = S[t];
           if (o.nosho) {
-            st.J++;
+            st.J++; ex = true;
             if (t === (o.nosho === "h" ? g[0] : g[1])) st.FC++; else { st.V++; st.pj += 3; }
-            e.excluded = true;
           } else if (o.res) {
             var my = o.res[home ? 0 : 1], th = o.res[home ? 1 : 0];
-            st.J++; st.gm += my; st.gs += th;
+            st.J++; st.gm += my; st.gs += th; played++;
             if (my > th) { st.V++; st.pj += 3; } else if (my === th) { st.E++; st.pj += 1; } else st.D++;
             if (o.fem[home ? 0 : 1]) st.pm += 2;
-            if (o.fouls) { cum[t].s += o.fouls[home ? 0 : 1]; cum[t].n++; } else foulsOk = false;
-          } else { decided = false; e.excluded = true; }
-          entries.push(e);
+          } else { decided = false; ex = true; }
         }
-        if (decided && foulsOk) {
-          var el = entries.filter(function (x) { return !x.excluded && cum[x.t].n > 0; });
-          el.forEach(function (x) { x.avg = cum[x.t].s / cum[x.t].n; });
-          if (el.length) {
-            var sorted = el.map(function (x) { return x.avg; }).sort(function (a, b) { return a - b; });
-            var lim = sorted[Math.min(2, sorted.length - 1)];
-            el.forEach(function (x) { if (x.avg <= lim) S[x.t].pf += 2; });
-          }
+        if (!any) continue;
+        var tfv = over.tf[d + "_" + t];
+        if (tfv != null && played > 0) { cum[t].s += +tfv; cum[t].n += played; }
+        else if (!ex && played > 0) foulsOk = false;
+        entries.push({ t: t, excluded: ex });
+      }
+      if (decided && foulsOk) {
+        var el = entries.filter(function (x) { return !x.excluded && cum[x.t].n > 0; });
+        el.forEach(function (x) { x.avg = cum[x.t].s / cum[x.t].n; });
+        if (el.length) {
+          var sorted = el.map(function (x) { return x.avg; }).sort(function (a, b) { return a - b; });
+          var lim = sorted[Math.min(2, sorted.length - 1)];
+          el.forEach(function (x) { if (x.avg <= lim) S[x.t].pf += 2; });
         }
       }
     }
@@ -803,7 +822,7 @@ body { margin: 0; }
       '<li><b>Faltas:</b> as 3 equipas com menor média de faltas no final de cada jornada ganham 2 pontos, exceto as equipas que não joguem por falta de comparência do adversário.</li>' +
       '<li><b>Fem.:</b> equipas com jogadoras que tenham sempre pelo menos uma jogadora em campo em todos os jogos ganham 2 pontos.</li>' +
       '<li><b>Falta de comparência:</b> 0 pontos para a equipa que não compareceu.</li>' +
-      '<li class="assume">Critérios que a regra não define e que a página aplica assim: o adversário de uma falta de comparência conta como vitória (3 pontos); a média de faltas é por jogo, acumulada até à jornada; em caso de empate na 3.ª menor média, todas as equipas empatadas ganham os 2 pontos; os pontos de faltas só são atribuídos quando todos os jogos da jornada têm resultado e faltas; desempate da classificação por pontos, vitórias e diferença de golos.</li></ul></details>';
+      '<li class="assume">Critérios que a regra não define e que a página aplica assim: o adversário de uma falta de comparência conta como vitória (3 pontos); a média de faltas é por jogo, acumulada até à jornada; em caso de empate na 3.ª menor média, todas as equipas empatadas ganham os 2 pontos; as faltas são o total de cada equipa nas duas jornadas da data e a média é por jogo; os pontos de faltas só são atribuídos quando todos os jogos da data têm resultado e todas as equipas têm as faltas preenchidas; desempate da classificação por pontos, vitórias e diferença de golos.</li></ul></details>';
     return h;
   }
 
@@ -870,20 +889,18 @@ body { margin: 0; }
   }
   function saveResult(rk) {
     function gv(id) { var e = document.getElementById(id); return e ? e.value.replace(/\D/g, "") : ""; }
-    var h = gv("res-h"), a = gv("res-a"), fh = gv("fou-h"), fa = gv("fou-a");
+    var h = gv("res-h"), a = gv("res-a");
     var ns = document.getElementById("nosho").value;
     var femH = document.getElementById("fem-h").checked ? 1 : 0, femA = document.getElementById("fem-a").checked ? 1 : 0;
     var up = {};
     function put(map, key, val) { if (val) over[map][rk] = val; else delete over[map][rk]; up[map + "/" + rk] = val || null; }
     if (ns) {
-      put("nosho", rk, ns); put("results", rk, null); put("fouls", rk, null); put("fem", rk, null);
+      put("nosho", rk, ns); put("results", rk, null); put("fem", rk, null);
     } else {
       if ((h && !a) || (!h && a)) { setStatus("Preenche os golos das duas equipas.", true); return; }
-      if ((fh && !fa) || (!fh && fa)) { setStatus("Preenche as faltas das duas equipas.", true); return; }
-      if (!h && (fh || femH || femA)) { setStatus("Preenche os golos antes de guardar as faltas e a jogadora em campo.", true); return; }
+      if (!h && (femH || femA)) { setStatus("Preenche os golos antes de guardar a jogadora em campo.", true); return; }
       put("nosho", rk, null);
       put("results", rk, h ? (+h) + "-" + (+a) : null);
-      put("fouls", rk, fh ? (+fh) + "-" + (+fa) : null);
       put("fem", rk, (femH || femA) ? femH + "-" + femA : null);
     }
     editing = null;
@@ -1073,6 +1090,7 @@ body { margin: 0; }
     if (a === "pdf-all") { exportPdf(0); return; }
     if (a === "edit-city") editing = { kind: "city", key: b.getAttribute("data-key") };
     else if (a === "edit-result") editing = { kind: "result", key: b.getAttribute("data-key") };
+    else if (a === "edit-tfoul") editing = { kind: "tfoul", key: b.getAttribute("data-key") };
     else if (a === "edit-team") editing = { kind: "team", key: b.getAttribute("data-key") };
     else if (a === "cancel") editing = null;
     render();
@@ -1081,6 +1099,7 @@ body { margin: 0; }
     var f = e.target.closest("form[data-form]");
     if (!f) return;
     e.preventDefault();
+    if (f.getAttribute("data-form") === "tfoul") { saveTfoul(f.getAttribute("data-key"), document.getElementById("tf-in").value); return; }
     if (f.getAttribute("data-form") === "result") { saveResult(f.getAttribute("data-key")); return; }
     var gi = document.getElementById("edit-gps");
     saveEdit(f.getAttribute("data-form"), f.getAttribute("data-key"), document.getElementById("edit-input").value, gi ? gi.value : "");
