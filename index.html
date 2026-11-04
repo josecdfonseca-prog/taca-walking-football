@@ -192,9 +192,9 @@ form.inline input[type="checkbox"] { flex: none; width: 20px; height: 20px; min-
 form.res select { min-height: 40px; font: inherit; font-size: 15px; color: var(--ink); background: var(--surface); border: 1px solid var(--accent); border-radius: 6px; padding: 4px 8px; max-width: 100%; }
 .resmeta { flex-basis: 100%; font-size: 13px; color: var(--muted); }
 .tblwrap { overflow-x: auto; margin-top: 10px; }
-table.std { border-collapse: collapse; width: 100%; min-width: 600px; font-variant-numeric: tabular-nums; font-size: 15px; }
-table.std th { font-family: var(--font-display); font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; font-size: 14px; padding: 8px 6px; background: var(--zc); color: var(--zc-ink); text-align: center; white-space: nowrap; }
-table.std td { padding: 8px 6px; text-align: center; border-bottom: 1px solid var(--line); }
+table.std { border-collapse: collapse; width: 100%; min-width: 520px; font-variant-numeric: tabular-nums; font-size: 15px; }
+table.std th { font-family: var(--font-display); font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; font-size: 14px; padding: 8px 6px; background: var(--zc); color: var(--zc-ink); text-align: center; white-space: nowrap; line-height: 1.15; font-size: 13px; padding: 6px 4px; vertical-align: bottom; }
+table.std td { padding: 8px 4px; text-align: center; border-bottom: 1px solid var(--line); }
 table.std th.l, table.std td.l { text-align: left; position: sticky; left: 0; min-width: 190px; background: var(--bg); }
 table.std th.l { background: var(--zc); }
 table.std td.l a { display: flex; align-items: center; gap: 8px; text-decoration: none; }
@@ -813,16 +813,18 @@ body { margin: 0; }
     var rows = computeStandings();
     var h = zoneHead("classificacao");
     h += '<p class="tsub" style="margin-top:12px">A classificação atualiza à medida que os resultados são inseridos na página de cada clube.</p>';
-    h += '<div class="tblwrap"><table class="std"><thead><tr><th class="l">Clube</th><th>J</th><th>V</th><th>E</th><th>D</th><th title="Faltas de comparência">FC</th><th>Faltas</th><th>Méd. F</th><th>P. Faltas</th><th>P. Fem.</th><th>Pts</th></tr></thead><tbody>';
+    h += '<div class="tblwrap"><table class="std"><thead><tr><th class="l">Clube</th><th>J</th><th>V</th><th>E</th><th>D</th><th>GM</th><th>GS</th><th>DG</th><th>P. Extra<br>Faltas</th><th>P. Extra<br>Fem.</th><th>Nº<br>Faltas</th><th>Média<br>Faltas</th><th>Pts</th></tr></thead><tbody>';
     rows.forEach(function (r, i) {
+      var dg = r.gm - r.gs;
       h += '<tr><td class="l"><a href="' + zhref("-clube-" + r.t) + '"><span class="pos">' + (i + 1) + '</span>' + logo(r.t, 'sm') + '<span class="nm">' + esc(teamName(r.t)) + '</span></a></td>' +
-        '<td>' + r.J + '</td><td>' + r.V + '</td><td>' + r.E + '</td><td>' + r.D + '</td><td>' + r.FC + '</td><td>' + r.ft + '</td><td>' + (r.avg === null ? '–' : r.avg.toFixed(1).replace('.', ',')) + '</td>' +
-        '<td>' + r.pf + '</td><td>' + r.pm + '</td><td class="pts">' + r.pts + '</td></tr>';
+        '<td>' + r.J + '</td><td>' + r.V + '</td><td>' + r.E + '</td><td>' + r.D + '</td><td>' + r.gm + '</td><td>' + r.gs + '</td><td>' + (dg > 0 ? '+' : '') + dg + '</td>' +
+        '<td>' + r.pf + '</td><td>' + r.pm + '</td><td>' + r.ft + '</td><td>' + (r.avg === null ? '–' : r.avg.toFixed(1).replace('.', ',')) + '</td><td class="pts">' + r.pts + '</td></tr>';
     });
     h += '</tbody></table></div>';
-    h += '<dl class="legend"><dt>J</dt><dd>Jogos</dd><dt>V</dt><dd>Vitórias</dd><dt>E</dt><dd>Empates</dd><dt>D</dt><dd>Derrotas</dd><dt>FC</dt><dd>Faltas de comparência</dd>' +
-      '<dt>Faltas</dt><dd>Total de faltas cometidas</dd><dt>Méd. F</dt><dd>Média de faltas por jogo</dd>' +
-      '<dt>P. Faltas</dt><dd>Pontos das 3 menores médias de faltas</dd><dt>P. Fem.</dt><dd>Pontos por jogadora sempre em campo</dd><dt>Pts</dt><dd>Total de pontos</dd></dl>';
+    h += '<dl class="legend"><dt>J</dt><dd>Jogos</dd><dt>V</dt><dd>Vitórias</dd><dt>E</dt><dd>Empates</dd><dt>D</dt><dd>Derrotas</dd>' +
+      '<dt>GM</dt><dd>Golos marcados</dd><dt>GS</dt><dd>Golos sofridos</dd><dt>DG</dt><dd>Diferença de golos</dd>' +
+      '<dt>P. Extra Faltas</dt><dd>Pontos extra das 3 menores médias de faltas</dd><dt>P. Extra Fem.</dt><dd>Pontos extra por jogadora sempre em campo</dd>' +
+      '<dt>Nº Faltas</dt><dd>Total de faltas cometidas</dd><dt>Média Faltas</dt><dd>Média de faltas por jogo</dd><dt>Pts</dt><dd>Total de pontos</dd></dl>';
     h += '<details class="all rules"><summary>Como se pontua</summary><ul class="rulelist">' +
       '<li><b>Vitória:</b> 3 pontos. <b>Empate:</b> 1 ponto. <b>Derrota:</b> 0 pontos.</li>' +
       '<li><b>Faltas:</b> as 3 equipas com menor média de faltas no final de cada jornada ganham 2 pontos, exceto as equipas que não joguem por falta de comparência do adversário.</li>' +
