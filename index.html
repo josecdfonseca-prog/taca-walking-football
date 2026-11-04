@@ -180,6 +180,9 @@ nav.tabs { margin-top: 10px; }
 .pending-note { margin-top: 16px; padding: 14px 16px; border-left: 4px solid var(--zc); background: var(--accent-soft); border-radius: 0 3px 3px 0; max-width: 60ch; }
 
 /* Logos, game meta */
+.legend { display: grid; grid-template-columns: auto 1fr; gap: 4px 12px; margin: 14px 0 6px; font-size: 14px; max-width: 62ch; }
+.legend dt { font-family: var(--font-display); font-weight: 700; letter-spacing: 0.04em; color: var(--zc-text); }
+.legend dd { margin: 0; color: var(--muted); }
 nav.tabs { gap: 14px; overflow-x: auto; }
 nav.tabs a { font-size: 16px; white-space: nowrap; }
 form.res .fr { display: flex; align-items: center; gap: 8px; width: 100%; flex-wrap: wrap; }
@@ -765,7 +768,7 @@ body { margin: 0; }
   }
   function computeStandings() {
     var n = Z.teams.length, S = [], cum = [], t, d, w;
-    for (t = 1; t <= n; t++) { S[t] = { t: t, J: 0, V: 0, E: 0, D: 0, FC: 0, gm: 0, gs: 0, pj: 0, pf: 0, pm: 0 }; cum[t] = { s: 0, n: 0 }; }
+    for (t = 1; t <= n; t++) { S[t] = { t: t, J: 0, V: 0, E: 0, D: 0, FC: 0, gm: 0, gs: 0, pj: 0, pf: 0, pm: 0, ft: 0 }; cum[t] = { s: 0, n: 0 }; }
     for (d = 0; d < Z.dates.length; d++) {
       var entries = [], decided = true, foulsOk = true;
       for (t = 1; t <= n; t++) {
@@ -787,11 +790,11 @@ body { margin: 0; }
         }
         if (!any) continue;
         var tfv = over.tf[d + "_" + t];
-        if (tfv != null && played > 0) { cum[t].s += +tfv; cum[t].n += played; }
+        if (tfv != null && played > 0) { cum[t].s += +tfv; cum[t].n += played; S[t].ft += +tfv; }
         else if (!ex && played > 0) foulsOk = false;
         entries.push({ t: t, excluded: ex });
       }
-      if (decided && foulsOk) {
+      if (foulsOk) {
         var el = entries.filter(function (x) { return !x.excluded && cum[x.t].n > 0; });
         el.forEach(function (x) { x.avg = cum[x.t].s / cum[x.t].n; });
         if (el.length) {
@@ -810,19 +813,22 @@ body { margin: 0; }
     var rows = computeStandings();
     var h = zoneHead("classificacao");
     h += '<p class="tsub" style="margin-top:12px">A classificação atualiza à medida que os resultados são inseridos na página de cada clube.</p>';
-    h += '<div class="tblwrap"><table class="std"><thead><tr><th class="l">Clube</th><th>J</th><th>V</th><th>E</th><th>D</th><th title="Faltas de comparência">FC</th><th title="Média de faltas por jogo">Méd. F</th><th title="Pontos de vitória e empate">Jogo</th><th title="Pontos das 3 menores médias de faltas">Faltas</th><th title="Pontos por jogadora em campo">Fem.</th><th>Pts</th></tr></thead><tbody>';
+    h += '<div class="tblwrap"><table class="std"><thead><tr><th class="l">Clube</th><th>J</th><th>V</th><th>E</th><th>D</th><th title="Faltas de comparência">FC</th><th>Faltas</th><th>Méd. F</th><th>P. Jogo</th><th>P. Faltas</th><th>P. Fem.</th><th>Pts</th></tr></thead><tbody>';
     rows.forEach(function (r, i) {
       h += '<tr><td class="l"><a href="' + zhref("-clube-" + r.t) + '"><span class="pos">' + (i + 1) + '</span>' + logo(r.t, 'sm') + '<span class="nm">' + esc(teamName(r.t)) + '</span></a></td>' +
-        '<td>' + r.J + '</td><td>' + r.V + '</td><td>' + r.E + '</td><td>' + r.D + '</td><td>' + r.FC + '</td><td>' + (r.avg === null ? '–' : r.avg.toFixed(1).replace('.', ',')) + '</td>' +
+        '<td>' + r.J + '</td><td>' + r.V + '</td><td>' + r.E + '</td><td>' + r.D + '</td><td>' + r.FC + '</td><td>' + r.ft + '</td><td>' + (r.avg === null ? '–' : r.avg.toFixed(1).replace('.', ',')) + '</td>' +
         '<td>' + r.pj + '</td><td>' + r.pf + '</td><td>' + r.pm + '</td><td class="pts">' + r.pts + '</td></tr>';
     });
     h += '</tbody></table></div>';
+    h += '<dl class="legend"><dt>J</dt><dd>Jogos</dd><dt>V</dt><dd>Vitórias</dd><dt>E</dt><dd>Empates</dd><dt>D</dt><dd>Derrotas</dd><dt>FC</dt><dd>Faltas de comparência</dd>' +
+      '<dt>Faltas</dt><dd>Total de faltas cometidas</dd><dt>Méd. F</dt><dd>Média de faltas por jogo</dd><dt>P. Jogo</dt><dd>Pontos de vitórias e empates</dd>' +
+      '<dt>P. Faltas</dt><dd>Pontos das 3 menores médias de faltas</dd><dt>P. Fem.</dt><dd>Pontos por jogadora sempre em campo</dd><dt>Pts</dt><dd>Total de pontos</dd></dl>';
     h += '<details class="all rules"><summary>Como se pontua</summary><ul class="rulelist">' +
       '<li><b>Vitória:</b> 3 pontos. <b>Empate:</b> 1 ponto. <b>Derrota:</b> 0 pontos.</li>' +
       '<li><b>Faltas:</b> as 3 equipas com menor média de faltas no final de cada jornada ganham 2 pontos, exceto as equipas que não joguem por falta de comparência do adversário.</li>' +
       '<li><b>Fem.:</b> equipas com jogadoras que tenham sempre pelo menos uma jogadora em campo em todos os jogos ganham 2 pontos.</li>' +
       '<li><b>Falta de comparência:</b> 0 pontos para a equipa que não compareceu.</li>' +
-      '<li class="assume">Critérios que a regra não define e que a página aplica assim: o adversário de uma falta de comparência conta como vitória (3 pontos); a média de faltas é por jogo, acumulada até à jornada; em caso de empate na 3.ª menor média, todas as equipas empatadas ganham os 2 pontos; as faltas são o total de cada equipa nas duas jornadas da data e a média é por jogo; os pontos de faltas só são atribuídos quando todos os jogos da data têm resultado e todas as equipas têm as faltas preenchidas; desempate da classificação por pontos, vitórias e diferença de golos.</li></ul></details>';
+      '<li class="assume">Critérios que a regra não define e que a página aplica assim: o adversário de uma falta de comparência conta como vitória (3 pontos); a média de faltas é por jogo, acumulada até à jornada; em caso de empate na 3.ª menor média, todas as equipas empatadas ganham os 2 pontos; as faltas são o total de cada equipa nas duas jornadas da data e a média é por jogo; os pontos de faltas de cada data só são atribuídos quando todas as equipas que jogaram nessa data têm as faltas preenchidas; desempate da classificação por pontos, vitórias e diferença de golos.</li></ul></details>';
     return h;
   }
 
