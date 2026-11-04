@@ -813,15 +813,15 @@ body { margin: 0; }
     var rows = computeStandings();
     var h = zoneHead("classificacao");
     h += '<p class="tsub" style="margin-top:12px">A classificação atualiza à medida que os resultados são inseridos na página de cada clube.</p>';
-    h += '<div class="tblwrap"><table class="std"><thead><tr><th class="l">Clube</th><th>J</th><th>V</th><th>E</th><th>D</th><th title="Faltas de comparência">FC</th><th>Faltas</th><th>Méd. F</th><th>P. Jogo</th><th>P. Faltas</th><th>P. Fem.</th><th>Pts</th></tr></thead><tbody>';
+    h += '<div class="tblwrap"><table class="std"><thead><tr><th class="l">Clube</th><th>J</th><th>V</th><th>E</th><th>D</th><th title="Faltas de comparência">FC</th><th>Faltas</th><th>Méd. F</th><th>P. Faltas</th><th>P. Fem.</th><th>Pts</th></tr></thead><tbody>';
     rows.forEach(function (r, i) {
       h += '<tr><td class="l"><a href="' + zhref("-clube-" + r.t) + '"><span class="pos">' + (i + 1) + '</span>' + logo(r.t, 'sm') + '<span class="nm">' + esc(teamName(r.t)) + '</span></a></td>' +
         '<td>' + r.J + '</td><td>' + r.V + '</td><td>' + r.E + '</td><td>' + r.D + '</td><td>' + r.FC + '</td><td>' + r.ft + '</td><td>' + (r.avg === null ? '–' : r.avg.toFixed(1).replace('.', ',')) + '</td>' +
-        '<td>' + r.pj + '</td><td>' + r.pf + '</td><td>' + r.pm + '</td><td class="pts">' + r.pts + '</td></tr>';
+        '<td>' + r.pf + '</td><td>' + r.pm + '</td><td class="pts">' + r.pts + '</td></tr>';
     });
     h += '</tbody></table></div>';
     h += '<dl class="legend"><dt>J</dt><dd>Jogos</dd><dt>V</dt><dd>Vitórias</dd><dt>E</dt><dd>Empates</dd><dt>D</dt><dd>Derrotas</dd><dt>FC</dt><dd>Faltas de comparência</dd>' +
-      '<dt>Faltas</dt><dd>Total de faltas cometidas</dd><dt>Méd. F</dt><dd>Média de faltas por jogo</dd><dt>P. Jogo</dt><dd>Pontos de vitórias e empates</dd>' +
+      '<dt>Faltas</dt><dd>Total de faltas cometidas</dd><dt>Méd. F</dt><dd>Média de faltas por jogo</dd>' +
       '<dt>P. Faltas</dt><dd>Pontos das 3 menores médias de faltas</dd><dt>P. Fem.</dt><dd>Pontos por jogadora sempre em campo</dd><dt>Pts</dt><dd>Total de pontos</dd></dl>';
     h += '<details class="all rules"><summary>Como se pontua</summary><ul class="rulelist">' +
       '<li><b>Vitória:</b> 3 pontos. <b>Empate:</b> 1 ponto. <b>Derrota:</b> 0 pontos.</li>' +
